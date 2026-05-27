@@ -4,10 +4,13 @@ import com.jobboard.api.model.Job;
 import com.jobboard.api.service.JobService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -18,8 +21,17 @@ public class JobController {
     private JobService jobService;
 
     @GetMapping
-    public ResponseEntity<List<Job>> getAllJobs() {
-        return ResponseEntity.ok(jobService.getAllJobs());
+    public ResponseEntity<Page<Job>> getAllJobs(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String direction) {
+
+        Sort sort = direction.equalsIgnoreCase("asc")
+                ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        return ResponseEntity.ok(jobService.getAllJobs(pageable));
     }
 
     @GetMapping("/{id}")
@@ -30,16 +42,20 @@ public class JobController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<Job>> searchJobs(
+    public ResponseEntity<Page<Job>> searchJobs(
             @RequestParam(required = false) String title,
-            @RequestParam(required = false) String location) {
-        if (title != null) {
-            return ResponseEntity.ok(jobService.searchByTitle(title));
-        }
-        if (location != null) {
-            return ResponseEntity.ok(jobService.searchByLocation(location));
-        }
-        return ResponseEntity.ok(jobService.getAllJobs());
+            @RequestParam(required = false) String location,
+            @RequestParam(required = false) Job.JobType jobType,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String direction) {
+
+        Sort sort = direction.equalsIgnoreCase("asc")
+                ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        return ResponseEntity.ok(jobService.searchJobs(title, location, jobType, pageable));
     }
 
     @PostMapping

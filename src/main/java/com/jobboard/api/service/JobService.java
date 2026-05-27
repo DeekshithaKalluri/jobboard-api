@@ -5,6 +5,8 @@ import com.jobboard.api.model.User;
 import com.jobboard.api.repository.JobRepository;
 import com.jobboard.api.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import java.util.List;
@@ -19,8 +21,8 @@ public class JobService {
     @Autowired
     private UserRepository userRepository;
 
-    public List<Job> getAllJobs() {
-        return jobRepository.findAll();
+    public Page<Job> getAllJobs(Pageable pageable) {
+        return jobRepository.findAll(pageable);
     }
 
     public Optional<Job> getJobById(Long id) {
@@ -59,6 +61,11 @@ public class JobService {
         }).orElse(false);
     }
 
+    public Page<Job> searchJobs(String title, String location, Job.JobType jobType, Pageable pageable) {
+        return jobRepository.searchJobs(title, location, jobType, pageable);
+    }
+
+    // kept for unit tests
     public List<Job> searchByTitle(String title) {
         return jobRepository.findByTitleContainingIgnoreCase(title);
     }

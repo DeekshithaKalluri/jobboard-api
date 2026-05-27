@@ -11,6 +11,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
@@ -57,13 +61,15 @@ class JobServiceTest {
 
     @Test
     void getAllJobs_returnsAllJobs() {
-        when(jobRepository.findAll()).thenReturn(List.of(testJob));
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Job> page = new PageImpl<>(List.of(testJob));
+        when(jobRepository.findAll(pageable)).thenReturn(page);
 
-        List<Job> jobs = jobService.getAllJobs();
+        Page<Job> result = jobService.getAllJobs(pageable);
 
-        assertEquals(1, jobs.size());
-        assertEquals("Software Engineer", jobs.get(0).getTitle());
-        verify(jobRepository, times(1)).findAll();
+        assertEquals(1, result.getTotalElements());
+        assertEquals("Software Engineer", result.getContent().get(0).getTitle());
+        verify(jobRepository, times(1)).findAll(pageable);
     }
 
     @Test

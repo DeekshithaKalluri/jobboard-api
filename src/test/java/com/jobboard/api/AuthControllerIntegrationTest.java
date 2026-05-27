@@ -134,4 +134,49 @@ class AuthControllerIntegrationTest {
                         .content("{}"))
                 .andExpect(status().isUnauthorized());
     }
+    @Test
+    void register_duplicateEmail_returns400() throws Exception {
+        RegisterRequest first = new RegisterRequest();
+        first.setUsername("user1");
+        first.setEmail("shared@example.com");
+        first.setPassword("password123");
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(first)))
+                .andExpect(status().isOk());
+
+        RegisterRequest second = new RegisterRequest();
+        second.setUsername("user2");
+        second.setEmail("shared@example.com");
+        second.setPassword("password123");
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(second)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Email is already in use"));
+    }
+
+    @Test
+    void register_invalidEmail_returns400() throws Exception {
+        RegisterRequest request = new RegisterRequest();
+        request.setUsername("validuser");
+        request.setEmail("not-an-email");
+        request.setPassword("password123");
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void createJob_withInvalidToken_returns401() throws Exception {
+        mockMvc.perform(post("/api/jobs")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", "Bearer invalid.token.here")
+                        .content("{\"title\":\"Test\",\"company\":\"Co\",\"description\":\"Desc\",\"location\":\"NY\",\"salary\":100000,\"jobType\":\"FULL_TIME\"}"))
+                .andExpect(status().isUnauthorized());
+    }
 }

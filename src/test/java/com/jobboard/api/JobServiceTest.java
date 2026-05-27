@@ -1,5 +1,6 @@
 package com.jobboard.api;
 
+import com.jobboard.api.dto.JobResponse;
 import com.jobboard.api.model.Job;
 import com.jobboard.api.model.User;
 import com.jobboard.api.repository.JobRepository;
@@ -56,7 +57,7 @@ class JobServiceTest {
         testJob.setLocation("Austin, TX");
         testJob.setSalary(120000.0);
         testJob.setJobType(Job.JobType.FULL_TIME);
-        testJob.setPostedBy(testUser);
+        testJob.setPostedBy(testUser);  // already set — required for toResponse()
     }
 
     @Test
@@ -65,7 +66,7 @@ class JobServiceTest {
         Page<Job> page = new PageImpl<>(List.of(testJob));
         when(jobRepository.findAll(pageable)).thenReturn(page);
 
-        Page<Job> result = jobService.getAllJobs(pageable);
+        Page<JobResponse> result = jobService.getAllJobs(pageable);
 
         assertEquals(1, result.getTotalElements());
         assertEquals("Software Engineer", result.getContent().get(0).getTitle());
@@ -76,7 +77,7 @@ class JobServiceTest {
     void getJobById_existingId_returnsJob() {
         when(jobRepository.findById(1L)).thenReturn(Optional.of(testJob));
 
-        Optional<Job> result = jobService.getJobById(1L);
+        Optional<JobResponse> result = jobService.getJobById(1L);
 
         assertTrue(result.isPresent());
         assertEquals("TechCorp", result.get().getCompany());
@@ -86,7 +87,7 @@ class JobServiceTest {
     void getJobById_nonExistingId_returnsEmpty() {
         when(jobRepository.findById(99L)).thenReturn(Optional.empty());
 
-        Optional<Job> result = jobService.getJobById(99L);
+        Optional<JobResponse> result = jobService.getJobById(99L);
 
         assertFalse(result.isPresent());
     }
@@ -104,7 +105,7 @@ class JobServiceTest {
         newJob.setSalary(120000.0);
         newJob.setJobType(Job.JobType.FULL_TIME);
 
-        Job result = jobService.createJob(newJob, "testuser");
+        JobResponse result = jobService.createJob(newJob, "testuser");
 
         assertNotNull(result);
         assertEquals("Software Engineer", result.getTitle());

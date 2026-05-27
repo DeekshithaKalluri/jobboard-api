@@ -1,5 +1,6 @@
 package com.jobboard.api.controller;
 
+import com.jobboard.api.dto.JobResponse;
 import com.jobboard.api.model.Job;
 import com.jobboard.api.service.JobService;
 import jakarta.validation.Valid;
@@ -21,7 +22,7 @@ public class JobController {
     private JobService jobService;
 
     @GetMapping
-    public ResponseEntity<Page<Job>> getAllJobs(
+    public ResponseEntity<Page<JobResponse>> getAllJobs(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
@@ -42,7 +43,7 @@ public class JobController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<Page<Job>> searchJobs(
+    public ResponseEntity<Page<JobResponse>> searchJobs(
             @RequestParam(required = false) String title,
             @RequestParam(required = false) String location,
             @RequestParam(required = false) Job.JobType jobType,
@@ -59,9 +60,9 @@ public class JobController {
     }
 
     @PostMapping
-    public ResponseEntity<?> createJob(@Valid @RequestBody Job job,
-                                       Authentication authentication) {
-        Job created = jobService.createJob(job, authentication.getName());
+    public ResponseEntity<JobResponse> createJob(@Valid @RequestBody Job job,
+                                                 Authentication authentication) {
+        JobResponse created = jobService.createJob(job, authentication.getName());
         return ResponseEntity.ok(created);
     }
 
